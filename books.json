@@ -1,0 +1,92 @@
+[
+    {
+        "title": "The Great Adventure",
+        "desc": "An epic tale of discovery and courage.",
+        "author": "John Smith",
+        "year": 2002,
+        "pages": 350,
+        "price": 19.99,
+        "category": "Fiction"
+    },
+    {
+        "title": "Understanding the Universe",
+        "desc": "A deep dive into cosmology and astrophysics.",
+        "author": "Jane Doe",
+        "year": 2021,
+        "pages": 450,
+        "price": 25,
+        "category": "Science"
+    },
+    {
+        "title": "Mastering Python",
+        "desc": "A complete guide to Python programming.",
+        "author": "Alice Johnson",
+        "year": 2020,
+        "pages": 500,
+        "price": 29.99,
+        "category": "Non-fiction"
+    },
+    {
+        "title": "Fantasy Realm",
+        "desc": "A magical journey through enchanted lands.",
+        "author": "Bob Brown",
+        "year": 2022,
+        "pages": 380,
+        "price": 22,
+        "category": "Fantasy"
+    },
+    {
+        "title": "The Self-Help Guide",
+        "desc": "Practical steps to improve your life.",
+        "author": "Chris Green",
+        "year": 2018,
+        "pages": 300,
+        "price": 15.99,
+        "category": "Self-help"
+    },
+    {
+        "title": "Exploring Quantum Mechanics",
+        "desc": "A comprehensive introduction to quantum physics.",
+        "author": "David White",
+        "year": 2021,
+        "pages": 600,
+        "price": 35.00,
+        "category": "Science"
+    },
+    {
+        "title": "Mystery of the Lost City",
+        "desc": "A thrilling mystery novel.",
+        "author": "Emma Black",
+        "year": 2017,
+        "pages": 320,
+        "price": 18.50,
+        "category": "Fiction"
+    },
+    {
+        "title": "The Art of Mindfulness",
+        "desc": "A guide to meditation and mindfulness.",
+        "author": "Fiona Red",
+        "year": 2016,
+        "pages": 250,
+        "price": 14.99,
+        "category": "Self-help"
+    },
+    {
+        "title": "Legends of the Ancient World",
+        "desc": "Stories of mythology and legend.",
+        "author": "George Blue",
+        "year": 2015,
+        "pages": 400,
+        "price": 20.00,
+        "category": "Fantasy"
+    },
+    {
+        "title": "A Journey to the Unknown",
+        "desc": "An exploration of the unknown mysteries.",
+        "author": "Henry Gray",
+        "year": 2023,
+        "pages": 280,
+        "price": 17.99,
+        "category": "Unknown"
+    }
+]

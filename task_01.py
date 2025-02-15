@@ -1,5 +1,5 @@
 """
-Zadania praktyczne do nagrania
+Projekt - zarzadzenia ksiazkami
 
 1. Twoim zadaniem jest zaimplementowanie systemu zarządzania książkami w bibliotece cyfrowej.
 System będzie korzystał z mechanizmów do pobierania, walidacji, przetwarzania oraz prezentacji danych.
@@ -26,11 +26,10 @@ c. Prezentacja
 Implementacja klasy ReportService, która będzie generować raporty w różnych formatach (np. wyświetlanie
 w konsoli, zapis do pliku tekstowego).
 """
-from collections import defaultdict
 from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
 from decimal import Decimal
-from typing import Self, Any, override, Callable
+from typing import Any, override, Callable
 from enum import Enum
 import json
 import logging
@@ -71,32 +70,46 @@ class Book:
 
     def __repr__(self) -> str:
         return str(self)
+
+    def to_dict(self) -> dict[str, str]:
+        return {
+            'title': self.title,
+            'desc': self.desc,
+            'author': self.author,
+            'year': str(self.year),
+            'pages': str(self.pages),
+            'price': str(self.price),
+            'category': self.category.name
+        }
                 
         
-
-class FileService(ABC):
+class FileReadService(ABC):
 
     @abstractmethod
     def read(self, file_name:str) -> list[dict[str, str | int | float | Decimal]]:
         pass
 
-    @abstractmethod
-    def write(self, file_name: str, data: list[dict[str, str | int | float | Decimal]]) -> None:
-        pass
 
-
-class JsonFileService(FileService):
+class JsonFileReader(FileReadService):
 
     @override
     def read(self, file_name: str) -> list[dict[str, str | int | float | Decimal]]:
         with open(file_name, 'r', encoding='UTF-8') as json_file:
             return json.load(json_file)
 
+
+class FileWriteService(ABC):
+
+    @abstractmethod
+    def write(self, file_name: str, data: str | dict[str, Any]) -> None:
+        pass
+
+class JsonFileWriter(FileWriteService):
+
     @override
-    def write(self, file_name: str, data: list[dict[str, str | int | float| Decimal]]) -> None:
+    def write(self, file_name: str, data: str | dict[str,Any]) -> None:
         with open(file_name, 'w', encoding='UTF8') as json_file:
             json.dump(data, json_file, indent=4, ensure_ascii=False)
-
 
 # Validation
 class Validator(ABC):
@@ -190,8 +203,8 @@ class BookConverter(Converter):
     @override
     def to_json(self, data: Book) -> dict[str, str | int | float | Decimal]:
 
-        # return data.__dict__ | {'category' : data.category.name}
         return {
+        # return data.__dict__ | {'category' : data.category.name}
             'title': data.title,
             'desc': data.desc,
             'author': data.author,
@@ -204,7 +217,7 @@ class BookConverter(Converter):
 
 @dataclass
 class BookRepository:
-    file_service: FileService
+    file_read_service: FileReadService
     validator: Validator
     converter: Converter
     file_name: str | None = None
@@ -237,7 +250,7 @@ class BookRepository:
             file_name = str(self.file_name)
 
         logging.info(f'Load book started from file {file_name}')
-        raw_data = self.file_service.read(file_name)
+        raw_data = self.file_read_service.read(file_name)
         self.books = self._process_data(raw_data)
         return self.books
         
@@ -288,7 +301,7 @@ class ReportService:
 
     def get_report_on_console(self) -> None:
 
-        for  book_category in BookCategory:
+        for book_category in BookCategory:
             print(book_category)
             filtered_books = self.library_services.filter_books_category(book_category)
             for filtered_book in filtered_books:
@@ -298,9 +311,24 @@ class ReportService:
             end_year = start_year + 10
             print(f'Years : {start_year} and {end_year} : {self.library_services.count_books_year_range(start_year, end_year)}')
 
+    def get_report_file(self, file_name: str, file_write_service: FileWriteService) -> None:
+        dict_book_category = {}
+        for book_category in BookCategory:
+            filtered_books = self.library_services.filter_books_category(book_category)
+            for filtered_book in filtered_books:
+                dict_book_category[book_category.name] = [book.to_dict() for book in filtered_books]
+        
+
+        data = {
+            'categories': dict_book_category
+        }
+        file_write_service.write(file_name,data)
+                
+
+
 def main() -> None:
       
-    json_service = JsonFileService()
+    json_service = JsonFileReader()
     book_validator = BookValidator()
     book_converter = BookConverter()
 
@@ -316,6 +344,8 @@ def main() -> None:
         library_service = LibraryService(book_repository)
         report_service = ReportService(library_service)
         report_service.get_report_on_console()
+        file_write_service = JsonFileWriter()
+        report_service.get_report_file('Report.json', file_write_service)
 
 
     except Exception as e:
