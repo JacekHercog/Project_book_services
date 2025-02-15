@@ -315,12 +315,16 @@ class ReportService:
         dict_book_category = {}
         for book_category in BookCategory:
             filtered_books = self.library_services.filter_books_category(book_category)
-            for filtered_book in filtered_books:
-                dict_book_category[book_category.name] = [book.to_dict() for book in filtered_books]
+            dict_book_category[book_category.name] = [book.to_dict() for book in filtered_books]
         
+        dict_years_data = {}
+        for start_year in range(2000, 2025, 5):
+            end_year = start_year + 9
+            dict_years_data[f'{start_year}-{end_year}'] = self.library_services.count_books_year_range(start_year,end_year)
 
         data = {
-            'categories': dict_book_category
+            'categories': dict_book_category,
+            'years': dict_years_data
         }
         file_write_service.write(file_name,data)
                 
