@@ -39,6 +39,9 @@ logging.basicConfig(
     format='[%(levelname)-8s] - %(asctime)s - %(message)s'
 )
 
+BookData = dict[str, str | int | float | Decimal]
+JsonWriteData = str | dict[str, Any] 
+
 class BookCategory(Enum):
     UNKNOWN = "Unknown"
     FICTION = "Fiction"
@@ -83,39 +86,39 @@ class Book:
         }
                 
         
-class FileReadService(ABC):
+class FileReadService[T](ABC):
 
     @abstractmethod
-    def read(self, file_name:str) -> list[dict[str, str | int | float | Decimal]]:
+    def read(self, file_name:str) -> list[T]:
         pass
 
 
-class JsonFileReader(FileReadService):
+class JsonFileReader(FileReadService[BookData]):
 
     @override
-    def read(self, file_name: str) -> list[dict[str, str | int | float | Decimal]]:
+    def read(self, file_name: str) -> list[BookData]:
         with open(file_name, 'r', encoding='UTF-8') as json_file:
             return json.load(json_file)
 
 
-class FileWriteService(ABC):
+class FileWriteService[T](ABC):
 
     @abstractmethod
-    def write(self, file_name: str, data: str | dict[str, Any]) -> None:
+    def write(self, file_name: str, data: T) -> None:
         pass
 
-class JsonFileWriter(FileWriteService):
+class JsonFileWriter(FileWriteService[JsonWriteData]):
 
     @override
-    def write(self, file_name: str, data: str | dict[str,Any]) -> None:
+    def write(self, file_name: str, data: JsonWriteData) -> None:
         with open(file_name, 'w', encoding='UTF8') as json_file:
             json.dump(data, json_file, indent=4, ensure_ascii=False)
 
 # Validation
-class Validator(ABC):
+class Validator[T](ABC):
     
     @abstractmethod
-    def validate(self, data: dict[str, str | int | float | Decimal]) -> bool:
+    def validate(self, data: T) -> bool:
         pass
 
     @staticmethod
@@ -126,10 +129,10 @@ class Validator(ABC):
     def is_between(n: int, left: int, right: int) -> bool:
         return left <= n <= right
 
-class BookValidator(Validator):
+class BookValidator(Validator[BookData]):
     
     @override
-    def validate(self, data: dict[str, str | int | float | Decimal]) -> bool:
+    def validate(self, data: BookData) -> bool:
         validate_fields = ['title', 'desc', 'author', 'year', 'pages', 'price', 'category']
 
         for field in validate_fields:
@@ -167,20 +170,20 @@ class BookValidator(Validator):
         return True
 
 
-class Converter(ABC):
+class Converter[T, U](ABC):
     
     @abstractmethod
-    def from_json(self, data: dict[str, str | int | float | Decimal]) -> Any:
+    def from_json(self, data: T) -> U:
         pass
 
     @abstractmethod
-    def to_json(self, data: Any) -> dict[str, str | int | float | Decimal]:
+    def to_json(self, data: U) -> T:
         pass
 
-class BookConverter(Converter):
+class BookConverter(Converter[BookData, Book]):
 
     @override
-    def from_json(self, data: dict[str, str | int | float | Decimal]) -> Book | None:
+    def from_json(self, data: BookData) -> Book:
         
         try:
             category = BookCategory(data['category'])
@@ -201,7 +204,7 @@ class BookConverter(Converter):
         ) 
 
     @override
-    def to_json(self, data: Book) -> dict[str, str | int | float | Decimal]:
+    def to_json(self, data: Book) -> BookData:
 
         return {
         # return data.__dict__ | {'category' : data.category.name}
@@ -217,9 +220,9 @@ class BookConverter(Converter):
 
 @dataclass
 class BookRepository:
-    file_read_service: FileReadService
-    validator: Validator
-    converter: Converter
+    file_read_service: FileReadService[BookData]
+    validator: Validator[BookData]
+    converter: Converter[BookData, Book]
     file_name: str | None = None
     books: list[Book] = field(default_factory=list, init=False)
 
@@ -255,7 +258,7 @@ class BookRepository:
         return self.books
         
 
-    def _process_data(self, raw_data: list[dict[str, str | int | float | Decimal]]) ->list[Book]:
+    def _process_data(self, raw_data: list[BookData]) ->list[Book]:
         valid_book = []
         for entry in raw_data:
             if self.validator.validate(entry):
